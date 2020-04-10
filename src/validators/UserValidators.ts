@@ -1,6 +1,6 @@
 import {body} from 'express-validator'
+import {query} from 'express-validator'
 import User from '../models/User';
-import { query } from 'express';
 import { Query } from 'mongoose';
 
 export class UserValidators {
@@ -24,13 +24,13 @@ export class UserValidators {
     }
 
     static verifyUser() {
-        return [body('verfication_token','Verification Token is Required').isNumeric(),
+        return [body('verification_token','Verification Token is Required').isNumeric(),
         body('email','Email is Required').isEmail(),
     
     ]
     }
 
     static resendVerificationEmail() {
-        return [body('email').isEmail()]
+        return [query('email').isEmail()]
     }
 }

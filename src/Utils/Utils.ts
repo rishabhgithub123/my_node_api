@@ -1,6 +1,6 @@
 export class Utils {
 
-    public MAX_TOKEN_TIME = 6000;
+    public MAX_TOKEN_TIME = 60000;
 
     static generateVerificationToken(size: number = 5){
         let digits = '0123456789';

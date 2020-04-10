@@ -25,7 +25,7 @@ export class Server {
     connectMongodb() {
 
         const databaseUrl = getEnvironmentVariables().db_url;
-        mangoose.connect(databaseUrl,{useNewUrlParser:true, useUnifiedTopology:true})
+        mangoose.connect(databaseUrl,{useNewUrlParser:true, useUnifiedTopology:true, useFindAndModify: false})
     .then(()=>{
         console.log('Mongodb is connected');
     }).catch(err => console.log(err));
