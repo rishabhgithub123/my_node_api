@@ -2,6 +2,9 @@ import User from '../models/User';
 import { Utils } from '../Utils/Utils';
 import { NodeMailer } from '../Utils/NodeMailer';
 import * as Bcrypt from 'bcrypt';
+import * as Jwt from 'jsonwebtoken';
+import { userInfo } from 'os';
+import { getEnvironmentVariables } from '../environments/env';
 
 export class UserController {
 
@@ -10,13 +13,14 @@ export class UserController {
 
         const email = req.body.email;
         const username = req.body.username;
+        const password = req.body.password;
 
         const verificationToken = Utils.generateVerificationToken();
 
         
         try {
 
-            const hash = await UserController.encryptPassword(req);
+            const hash = await Utils.encryptPassword(password);
 
             const data = {
                 email: email,
@@ -48,25 +52,11 @@ export class UserController {
 
     }
 
-    private static async encryptPassword(req) {
-        
-        return new Promise((resolve,reject) => {
-
-            Bcrypt.hash(req.body.password,10,(err,hash)=>{
-                if(err){
-                    reject(err);
-                }else {
-                    resolve(hash);
-                }
-            })
-        })
-
-    }
 
     static async verify(req,res,next) {
 
         const verification_token = req.body.verification_token;
-        const email = req.body.email;
+        const email = req.user.email;
                
         try {
             const user = await User.findOneAndUpdate({email:email,
@@ -90,7 +80,7 @@ export class UserController {
 
     static async resendVerificationEmail(req,res,next) {
 
-        const email = req.query.email;
+        const email = req.user.email;
         const verificationToken = Utils.generateVerificationToken();
 
         try {
@@ -119,5 +109,38 @@ export class UserController {
             next(e);
             
         }
+    }
+
+    static async login(req,res,next) {
+
+        const user = req.user;
+        const password = req.query.password;
+
+        try {
+
+            await Utils.comparePassword({
+                plainPassword: password,
+                encryptPassword: user.password
+            });
+
+            const token = Jwt.sign({
+                email: user.email,
+                user_id: user._id,
+            },getEnvironmentVariables().jwt_secret,{expiresIn: '120d'});
+
+            const data = {
+                user:user,
+                token: token,
+            };
+
+            res.json(data);
+
+            
+        } catch (e) {
+            next(e);
+            
+        }
+        
+
     }
 }

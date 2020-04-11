@@ -1,6 +1,8 @@
 import { validationResult } from "express-validator";
+import * as Jwt from 'jsonwebtoken';
+import { getEnvironmentVariables } from "../environments/env";
 
-export class GlobalErrorMIddleWare {
+export class GlobalErrorMiddleWare {
     static checkError(req,res,next){
 
         const error = validationResult(req);
@@ -10,5 +12,29 @@ export class GlobalErrorMIddleWare {
         }else {
             next();
         }
+    }
+
+    static async authenticate(req,res,next) {
+        const authHeader = req.headers.authorization;
+        const token = authHeader ? authHeader.slice(7,authHeader.lenght): null;
+
+        try {
+            req.errorStatus = 401;
+            Jwt.verify(token, getEnvironmentVariables().jwt_secret, ((err, decoded) => {
+                if(err){
+                    next(err);
+                }else if(!decoded) {
+                    next(new Error('User Not Authorised'));
+                }else{
+                    req.user = decoded;
+                    next();
+                }
+            }))
+            
+        } catch (e) {
+            next(e)
+            
+        }
+
     }
 }

@@ -1,7 +1,6 @@
 import {body} from 'express-validator'
 import {query} from 'express-validator'
 import User from '../models/User';
-import { Query } from 'mongoose';
 
 export class UserValidators {
     static signUp() {
@@ -25,12 +24,24 @@ export class UserValidators {
 
     static verifyUser() {
         return [body('verification_token','Verification Token is Required').isNumeric(),
-        body('email','Email is Required').isEmail(),
     
     ]
     }
 
     static resendVerificationEmail() {
-        return [query('email').isEmail()]
+        return [query('email','Email is Required').isEmail()]
+    }
+
+    static login() {
+        return [query('email','Email is Required').isEmail().custom((email,{req})=>{
+            return User.findOne({email:email}).then(user=>{
+                if(user){
+                    req.user = user;
+                    return true;
+                }else {
+                    throw new Error('User Does Not Exist');
+                }
+            });
+        }), query('password','Password is Required').isAlphanumeric()]
     }
 }

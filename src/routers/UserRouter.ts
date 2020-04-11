@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { UserController } from "../controllers/UserController";
 import { UserValidators } from "../validators/UserValidators";
-import { GlobalErrorMIddleWare } from "../middlewares/CheckError";
+import { GlobalErrorMiddleWare } from "../middlewares/CheckError";
 
 
 class UserRouter {
@@ -18,17 +18,18 @@ class UserRouter {
     
     getRoutes() {
 
-        this.router.get('/send/verification/email',UserValidators.resendVerificationEmail(), UserController.resendVerificationEmail);
+        this.router.get('/send/verification/email',GlobalErrorMiddleWare.authenticate, UserController.resendVerificationEmail);
+        this.router.get('/login',UserValidators.login(), GlobalErrorMiddleWare.checkError,UserController.login);
         
     }
 
     postRoutes() {
-        this.router.post('/signup',UserValidators.signUp(), GlobalErrorMIddleWare.checkError, UserController.signUp);
+        this.router.post('/signup',UserValidators.signUp(), GlobalErrorMiddleWare.checkError, UserController.signUp);
         
     }
 
     patchRoutes() {
-        this.router.patch('/verify',UserValidators.verifyUser(), GlobalErrorMIddleWare.checkError, UserController.verify);
+        this.router.patch('/verify',UserValidators.verifyUser(), GlobalErrorMiddleWare.checkError,GlobalErrorMiddleWare.authenticate, UserController.verify);
         
     }
 
