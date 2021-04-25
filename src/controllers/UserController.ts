@@ -97,7 +97,8 @@ export class UserController {
                 });
 
                 res.json({
-                    success: true
+                    success: true,
+                    message: "Email Send Successfully."
                 });
 
             }else {
@@ -122,6 +123,10 @@ export class UserController {
                 plainPassword: password,
                 encryptPassword: user.password
             });
+
+            await User.findOneAndUpdate(
+                {email:user.email},
+                {last_login: Date.now()},{new:true});
 
             const token = Jwt.sign({
                 email: user.email,
@@ -153,27 +158,27 @@ export class UserController {
 
         try {
 
-            User.findOne({_id:user_id}).then(async (user:any) => {
+            await User.findOne({_id:user_id}).then(async (user:any) => {
 
-               await Utils.comparePassword({
+               const isEqual = await Utils.comparePassword({
                    plainPassword:password,
                    encryptPassword: user.password
-
                });
                
-               const encryptedPassword  =await Utils.encryptPassword(newPassword);
+               if(isEqual) {
+                const encryptedPassword  = await Utils.encryptPassword(newPassword);
 
-               const newUser = await User.findOneAndUpdate({_id: user_id}, {password:encryptedPassword},
-                {new:true})
-
-                res.send(newUser);
-
+                const newUser = await User.findOneAndUpdate({_id: user_id}, {password:encryptedPassword, modified_at: new Date()},
+                 {new:true})
+ 
+                 res.send(newUser);
+               }
+               
             })
 
             
         } catch (e) {
-            next(e)
-     
+            next(e);
         }
     }
 }

@@ -56,7 +56,6 @@ export class Server {
 
     handlesError(){
         this.app.use((error,req,res,next)=>{
-
             const errorStatus = req.errorStatus || 500;
             res.status(errorStatus).json({
                 message: error.message || 'Something Went Wrong',

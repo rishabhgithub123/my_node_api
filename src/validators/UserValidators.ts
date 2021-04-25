@@ -5,11 +5,14 @@ import User from '../models/User';
 export class UserValidators {
     static signUp() {
         return [
-        body('email','Email is Required').isEmail().custom((email,{req})=>{
+        body('email','Email is Required').isEmail().custom((email, {req})=> {
+            return req.errorStatus = 400;
+        }),
+        body('email').custom((email,{req})=>{
             return User.findOne({email:email}).then(user => {
                 if(user) {
+                    req.errorStatus = 409;
                     throw new Error('User Already Exist');
-
                 }else {
                     return true;
                 }
@@ -17,7 +20,16 @@ export class UserValidators {
         }),
 
         body('password','Password is Required').isAlphanumeric().isLength({min:8, max:20}).withMessage('Password can be from 8-20 Characters only'),
-        body('username','Username is Required').isString(),
+        body('username','Username is Required').isString().custom((username, {req})=> {
+            return User.findOne({username:username}).then(user => {
+                if(user) {
+                    req.errorStatus = 409;
+                    throw new Error('Username Already Exit. Try Different One');
+                } else {
+                    return true;
+                }
+            })
+        }),
     ];
 
     }
@@ -54,7 +66,8 @@ export class UserValidators {
                 if(user){
                     req.user = user;
                     return true;
-                }else {
+                } else {
+                    req.errorStatus = 401;
                     throw new Error('User Does Not Exist');
                 }
             });

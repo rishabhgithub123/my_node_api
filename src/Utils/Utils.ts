@@ -4,7 +4,7 @@ export class Utils {
 
     public MAX_TOKEN_TIME = 60000;
 
-    static generateVerificationToken(size: number = 5){
+    static generateVerificationToken(size: number = 6){
         let digits = '0123456789';
         let otp = '';
         for(let i = 0; i<size; i++) {
@@ -34,14 +34,14 @@ export class Utils {
         return new Promise((resolve,reject) => {
             Bcrypt.compare(password.plainPassword,password.encryptPassword,((err,isSame)=> {
 
-                if(err){
-                    reject(err);
-                }else if(!isSame){
-                    reject(new Error('User and Password Does Not Match'));
-                }else {
-                    resolve(true);
-                }
-
+                    if(err){
+                        reject(err);
+                    }else if(!isSame){
+                        reject(new Error('User and Password Does Not Match'));
+                    }else {
+                        resolve(true);
+                    }
+            
             }))
         })
 
